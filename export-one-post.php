@@ -22,14 +22,14 @@ class Export_One_Post {
 		$this->future_date = '1970-01-05'; // Y-m-d
 
 		add_action( 'post_submitbox_misc_actions', array( $this, 'post_submitbox_misc_actions' ) );
-		add_filter( 'export_args', array( $this, 'export_args' ) );
-		add_filter( 'query', array( $this, 'query' ) );
+		add_filter( 'export_args',                 array( $this, 'export_args' ) );
+		add_filter( 'query',                       array( $this, 'query' ) );
 	}
 
 	function post_submitbox_misc_actions() {
 		?>
 		<style>
-		#export-one-post-icon:before {
+		#export-one-post:before {
 			content: "\f316";
 			color: #888;
 			top: -1px;
@@ -47,17 +47,18 @@ class Export_One_Post {
 		}
 		</style>
 		<div class="misc-pub-section">
-			<span id="export-one-post-icon"></span>
-			<a id="export-one-post" href="<?php echo admin_url( 'export.php?download&post_ID='. get_the_ID() ); ?>"><?php _e( 'Export This', 'export-one-post' ); ?></a>
+			<span id="export-one-post">
+				<a href="<?php echo esc_url( admin_url( 'export.php?download&post_ID='. get_the_ID() ) ); ?>"><?php _e( 'Export This', 'export-one-post' ); ?></a>
+			</span>
 		</div><?php
 	}
 
 	function export_args( $args ) {
 		if ( ! isset( $_GET['post_ID'] ) ) return $args;
 
-		$args['content'] = 'post';
+		$args['content']    = 'post';
 		$args['start_date'] = $this->future_date;
-		$args['end_date'] = $this->future_date;
+		$args['end_date']   = $this->future_date;
 
 		return $args;
 	}
@@ -78,13 +79,12 @@ class Export_One_Post {
 
 		if ( $test != $query ) return $query;
 
-		$split = explode( 'WHERE', $query );
-		$post_id = intval( $_GET['post_ID'] );
+		$split    = explode( 'WHERE', $query );
+		$post_id  = intval( $_GET['post_ID'] );
 		$split[1] = $wpdb->prepare( " {$wpdb->posts}.ID = %d", $post_id );
-		$query = implode( 'WHERE', $split );
+		$query    = implode( 'WHERE', $split );
 
 		return $query;
 	}
-
 
 }
