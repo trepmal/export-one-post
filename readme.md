@@ -1,6 +1,6 @@
 Export One Post
 ===============
 
-Works on pages too. And I don't see why it shouldn't on work custom post types too, but I haven't explicitly tested that.
+Works on pages and custom post types!
 
 ![screenshot](screenshot.png)
