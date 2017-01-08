@@ -27,11 +27,19 @@ class Export_One_Post {
 		// due to a lack of hooks, we're using what we hope is an unlikely date match
 		$this->fake_date = '1970-01-05'; // Y-m-d
 
-		add_action( 'post_submitbox_misc_actions', array( $this, 'post_submitbox_misc_actions' ) );
-		add_filter( 'export_args',                 array( $this, 'export_args' ) );
-		add_filter( 'query',                       array( $this, 'query' ) );
+		add_action( 'init', array( $this, 'init' ) );
 	}
 
+	/**
+	 *
+	 */
+	function init() {
+		if ( current_user_can( 'export' ) ) {
+			add_action( 'post_submitbox_misc_actions', array( $this, 'post_submitbox_misc_actions' ) );
+			add_filter( 'export_args',                 array( $this, 'export_args' ) );
+			add_filter( 'query',                       array( $this, 'query' ) );
+		}
+	}
 	/**
 	 * Insert our action link into the submit box
 	 *
@@ -40,27 +48,20 @@ class Export_One_Post {
 	function post_submitbox_misc_actions() {
 		?>
 		<style>
-		#export-one-post:before {
+		.export-one-post:before {
 			content: "\f316";
-			color: #888;
-			top: -1px;
-			font: 400 20px/1 dashicons;
+			color: #82878c;
+			font: normal 20px/1 dashicons;
 			speak: none;
 			display: inline-block;
-			padding: 0 2px 0 0;
-			top: 0;
-			left: -1px;
-			position: relative;
+			padding: 0 3px 0 0;
 			vertical-align: top;
 			-webkit-font-smoothing: antialiased;
 			-moz-osx-font-smoothing: grayscale;
-			text-decoration: none!important;
 		}
 		</style>
-		<div class="misc-pub-section">
-			<span id="export-one-post">
-				<a href="<?php echo esc_url( admin_url( 'export.php?download&post_ID='. get_the_ID() ) ); ?>"><?php esc_html_e( 'Export This', 'export-one-post' ); ?></a>
-			</span>
+		<div class="misc-pub-section export-one-post">
+			<a href="<?php echo esc_url( admin_url( 'export.php?download&export_single='. get_the_ID() ) ); ?>"><?php esc_html_e( 'Export This', 'export-one-post' ); ?></a>
 		</div><?php
 	}
 
@@ -72,8 +73,10 @@ class Export_One_Post {
 	 * @return $args Modified query
 	 */
 	function export_args( $args ) {
-		// if no post_ID var, it's a normal export - don't interfere
-		if ( ! isset( $_GET['post_ID'] ) ) return $args;
+		// if no export_single var, it's a normal export - don't interfere
+		if ( ! isset( $_GET['export_single'] ) ){
+			return $args;
+		}
 
 		// use our fake date so the query is easy to find (because we don't have a good hook to use)
 		$args['content']    = 'post';
@@ -91,7 +94,9 @@ class Export_One_Post {
 	 * @return string Modified SQL query
 	 */
 	function query( $query ) {
-		if ( ! isset( $_GET['post_ID'] ) ) return $query;
+		if ( ! isset( $_GET['export_single'] ) ) {
+			return $query;
+		}
 
 		global $wpdb;
 
@@ -104,12 +109,14 @@ class Export_One_Post {
 			date( 'Y-m-d', strtotime('+1 month', strtotime( $this->fake_date ) ) )
 		);
 
-		if ( $test != $query ) return $query;
+		if ( $test != $query ) {
+			return $query;
+		}
 
 		// divide query
 		$split    = explode( 'WHERE', $query );
 		// replace WHERE clause
-		$split[1] = $wpdb->prepare( " {$wpdb->posts}.ID = %d", intval( $_GET['post_ID'] ) );
+		$split[1] = $wpdb->prepare( " {$wpdb->posts}.ID = %d", intval( $_GET['export_single'] ) );
 		// put query back together
 		$query    = implode( 'WHERE', $split );
 
