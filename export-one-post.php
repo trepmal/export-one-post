@@ -61,7 +61,13 @@ class Export_One_Post {
 		}
 		</style>
 		<div class="misc-pub-section export-one-post">
-			<a href="<?php echo esc_url( admin_url( 'export.php?download&export_single='. get_the_ID() ) ); ?>"><?php esc_html_e( 'Export This', 'export-one-post' ); ?></a>
+			<?php
+				$export_url = add_query_arg( array(
+					'download'      => '',
+					'export_single' => get_the_ID(),
+				), admin_url( 'export.php' ) );
+			?>
+			<a href="<?php echo esc_url( $export_url ); ?>"><?php esc_html_e( 'Export This', 'export-one-post' ); ?></a>
 		</div><?php
 	}
 
@@ -74,7 +80,7 @@ class Export_One_Post {
 	 */
 	function export_args( $args ) {
 		// if no export_single var, it's a normal export - don't interfere
-		if ( ! isset( $_GET['export_single'] ) ){
+		if ( ! isset( $_GET['export_single'] ) ) {
 			return $args;
 		}
 
@@ -102,11 +108,11 @@ class Export_One_Post {
 
 		// This is the query WP will build (given our arg filtering above)
 		// Since the current_filter isn't narrow, we'll check each query
-		// to see if it matches, then if it we replace it
+		// to see if it matches, then if it is we replace it
 		$test = $wpdb->prepare(
 			"SELECT ID FROM {$wpdb->posts}  WHERE {$wpdb->posts}.post_type = 'post' AND {$wpdb->posts}.post_status != 'auto-draft' AND {$wpdb->posts}.post_date >= %s AND {$wpdb->posts}.post_date < %s",
 			date( 'Y-m-d', strtotime( $this->fake_date ) ),
-			date( 'Y-m-d', strtotime('+1 month', strtotime( $this->fake_date ) ) )
+			date( 'Y-m-d', strtotime( '+1 month', strtotime( $this->fake_date ) ) )
 		);
 
 		if ( $test != $query ) {
