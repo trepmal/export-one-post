@@ -98,6 +98,7 @@ class Export_One_Post {
 		// This is the query WP will build (given our arg filtering above)
 		// Since the current_filter isn't narrow, we'll check each query
 		// to see if it matches, then if it is we replace it
+		// @see https://github.com/wordpress/wordpress/blob/5.4.1/wp-admin/includes/export.php#L144
 		$test = $wpdb->prepare(
 			"SELECT ID FROM {$wpdb->posts}  WHERE {$wpdb->posts}.post_type = 'post' AND {$wpdb->posts}.post_status != 'auto-draft' AND {$wpdb->posts}.post_date >= %s AND {$wpdb->posts}.post_date < %s",
 			date( 'Y-m-d', strtotime( $this->fake_date ) ),

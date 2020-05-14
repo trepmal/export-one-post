@@ -1,7 +1,7 @@
 <?php
 /*
  * Plugin Name: Export One Post
- * Plugin URI: trepmal.com
+ * Plugin URI: https://github.com/trepmal/export-one-post
  * Description:
  * Version: 1.0
  * Author: Kailey Lampert
