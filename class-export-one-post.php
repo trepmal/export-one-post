@@ -25,12 +25,14 @@ class Export_One_Post {
 	 */
 	function init() {
 		if ( current_user_can( 'export' ) ) {
+			// block-editor support for button
+			add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_block_editor_assets' ) );
+
+			// classic editor support
 			add_action( 'post_submitbox_misc_actions', array( $this, 'post_submitbox_misc_actions' ) );
+
 			add_filter( 'export_args',                 array( $this, 'export_args' ) );
 			add_filter( 'query',                       array( $this, 'query' ) );
-
-			# block-editor support for button
-			add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_block_editor_assets' ) );
 		}
 	}
 
