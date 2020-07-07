@@ -31,6 +31,9 @@ class Export_One_Post {
 			// classic editor support
 			add_action( 'post_submitbox_misc_actions', array( $this, 'post_submitbox_misc_actions' ) );
 
+			add_filter( 'post_row_actions',            array( $this, 'row_action' ), 10, 2 );
+			add_filter( 'page_row_actions',            array( $this, 'row_action' ), 10, 2 );
+
 			add_filter( 'export_args',                 array( $this, 'export_args' ) );
 			add_filter( 'query',                       array( $this, 'query' ) );
 		}
@@ -46,10 +49,7 @@ class Export_One_Post {
 			array( 'wp-plugins', 'wp-edit-post', 'wp-element' )
 		);
 		wp_localize_script( 'exportone', 'exportOne', array(
-			'export_url' => add_query_arg( array(
-					'download'      => '',
-					'export_single' => get_the_ID(),
-				), admin_url( 'export.php' ) ),
+			'export_url' => $this->get_export_url(),
 		) );
 	}
 
@@ -73,14 +73,22 @@ class Export_One_Post {
 		}
 		</style>
 		<div class="misc-pub-section export-one-post">
-			<?php
-				$export_url = add_query_arg( array(
-					'download'      => '',
-					'export_single' => get_the_ID(),
-				), admin_url( 'export.php' ) );
-			?>
-			<a href="<?php echo esc_url( $export_url ); ?>"><?php esc_html_e( 'Export This', 'export-one-post' ); ?></a>
+			<a href="<?php echo esc_url( $this->get_export_url() ); ?>"><?php esc_html_e( 'Export This', 'export-one-post' ); ?></a>
 		</div><?php
+	}
+
+	/**
+	 * Page/post row action
+	 *
+	 * @param string[] $actions An array of row action links. Defaults are
+	 *                          'Edit', 'Quick Edit', 'Restore', 'Trash',
+	 *                          'Delete Permanently', 'Preview', and 'View'.
+	 * @param WP_Post  $post    The post object.
+	 * @return array $actions
+	 */
+	function row_action( $actions, $post ) {
+		$actions['export'] = sprintf( '<a href="%s">Export</a>', $this->get_export_url( $post->ID ) );
+		return $actions;
 	}
 
 	/**
@@ -140,6 +148,28 @@ class Export_One_Post {
 		$query    = implode( 'WHERE', $split );
 
 		return $query;
+	}
+
+	/**
+	 * Build the export url
+	 *
+	 * @param int $post_id
+	 * @return string|bool URL or false if no valid post ID
+	 */
+	private function get_export_url( $post_id = null ) {
+		if ( is_null( $post_id ) ) {
+			$post_id = get_the_id();
+		}
+
+		// still null?
+		if ( is_null( $post_id ) ) {
+			return false;
+		}
+
+		return add_query_arg( array(
+			'download'      => '',
+			'export_single' => $post_id,
+		), admin_url( 'export.php' ) );
 	}
 
 }
